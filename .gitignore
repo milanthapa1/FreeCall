@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+
+# Test and tooling artifacts
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.husky/_/
+.eslintcache
+
+# Logs and OS noise
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Local data
+docker/volumes/
+infra/docker/data/
