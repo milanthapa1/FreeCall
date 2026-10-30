@@ -60,8 +60,14 @@ Global definition of done for every phase:
 
 - Landing page: localized, SEO (metadata, hreflang, OG, sitemap, robots), static-first,
   no client JS in the critical path beyond hydration of the start control.
-- Age gate: DOB or 18+ attestation per market, server-verified age state, risk-tiered
-  assurance abstraction (`AgeAssuranceProvider`), guest cap policy, re-prompt rules.
+- Age gate: server-resolved market policy pack (ADR-0018), age state `>= required_tier(market)`,
+  risk-tiered assurance abstraction (`AgeAssuranceProvider`), guest cap policy, re-prompt rules.
+  Unknown or unsigned market ⇒ blocked, never default-allow.
+- Market policy packs: seeded row per ISO-3166-1 alpha-2 with `service_class`, required tier,
+  guest minutes, monetization, residency, reporting authority, moderator coverage, legal
+  sign-off; loaded into a 30s cache in web/realtime; per-market kill switch.
+- Geo enforcement: market resolved from the edge country, never from a client field; sanctioned
+  and `blocked` markets rejected at Cloudflare and again server-side; payments disabled there.
 - Guest sessions via Better Auth anonymous plugin, plus Google/Apple/magic link wiring
   behind a flag (accounts become user-facing in Phase 4).
 - Turnstile on guest start; per-IP and per-device rate limits; device fingerprint stored
@@ -80,8 +86,8 @@ Global definition of done for every phase:
    `>= required_tier(market)`; e2e test attempts direct API enqueue with a forged client flag
    and receives `403 age_required`.
 2. A guest that self-declares is capped: no DMs, no uploads, no profile, lower trust band,
-   and a maximum of 30 call-minutes per day before re-assurance is required. Enforced
-   server-side and unit-tested at the boundary.
+   and `market_policies.guest_minutes_per_day` (default 30) of call time per day before
+   re-assurance is required. Enforced server-side and unit-tested at the boundary.
 3. Landing page LCP p75 < 2.0s on a throttled 4G profile (Lighthouse CI, budget enforced in CI),
    CLS < 0.05, JS transferred for the landing route < 120KB gzip.
 4. Lighthouse accessibility score >= 95 and axe reports zero serious/critical issues on
@@ -91,8 +97,19 @@ Global definition of done for every phase:
 6. Guest start is rate limited: 60 starts/IP/hour and 5 starts/device/hour in staging load
    test, with `429` and `Retry-After`; Turnstile failure path returns a friendly retry.
 7. Analytics events carry no raw IP, no user agent string, no free text.
+8. Market resolution is server-side only: a forged `CF-IPCountry` header sent directly to the
+   origin cannot change the resolved market (origin is not publicly reachable, verified by test);
+   a request from an unknown ISO code resolves to `blocked` and pages.
+9. All ISO-3166-1 alpha-2 codes are seeded exactly once; a config lint fails if any enabled
+   market lacks `legal_signoff_ref` or `moderator_coverage` for its primary languages.
+10. A `blocked` market cannot enqueue, cannot pay, and sees the localized unavailable page;
+    verified for one sanctioned market and one `pending_legal` market. Payments return
+    `market_unavailable` server-side even with a forged client request.
+11. Residency: an `eu`-residency market writes only to the EU Neon project, EU R2 jurisdiction
+    and EU PostHog region; an attempted write to the global project fails closed and alerts.
 
-**Exit gate:** legal review of age-gate copy and the guest-cap policy signed off.
+**Exit gate:** legal sign-off on every *enabled* market pack, plus moderation coverage rota
+confirmed for each enabled market's primary languages.
 
 ---
 

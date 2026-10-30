@@ -83,9 +83,11 @@ orphans and asserts the two agree. Deletion runs are logged with object counts, 
 | Stripe | Payment data | Global | PCI DSS, DPA |
 | Sentry / PostHog | Errors / product events | EU or US per market | DPA, PII scrubbing |
 
-Market-level residency (data stays in-region) is a per-market policy flag. Markets that require
-it get a dedicated Neon project, R2 jurisdiction and PostHog region; the trade-off is higher cost
-and operational complexity, decided in ADR-0018 once the market list is fixed.
+Market-level residency (data stays in-region) is a per-market policy flag (ADR-0018). The
+mechanism ships with `global` and `eu` at launch: markets that legally require local storage get
+a pinned Neon project, R2 jurisdiction and PostHog region; any market whose residency value is
+not provisioned is `blocked` rather than silently served from the wrong region. This keeps the
+launch global without operating one stack per country.
 
 ## 6. Privacy engineering rules
 

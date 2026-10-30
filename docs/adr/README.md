@@ -19,9 +19,9 @@
 | [0015](0015-fail-closed-safety.md) | Safety actions fail closed, single policy engine, provenance | accepted |
 | [0016](0016-admin-console-isolation.md) | Admin console in web, isolated route group, server RBAC | accepted |
 | [0017](0017-product-scope-safety-first.md) | Product scope: safety before surface area | proposed |
+| [0018](0018-global-market-policy-packs.md) | Global launch via versioned market policy packs, fail-closed defaults | accepted |
 
 Open ADRs (not yet written, blocked on a decision):
 
-- 0018 — Regional launch policy packs and age-assurance tiers per market (blocked: market list).
 - 0019 — Translation provider and per-message translation retention (Phase 2).
 - 0020 — Managed LiveKit vs self-hosted (Phase 5, cost-driven).

@@ -155,9 +155,12 @@ desc)`; `(action, created_at desc)`. Partitioned monthly, retained 24 months (se
 
 ### `feature_flags`, `market_policies`
 `feature_flags(key PK, enabled, rollout jsonb, updated_by, updated_at)`.
-`market_policies(market PK, required_age_tier, min_age, monetization_enabled,
-matching_enabled, evidence_retention_days, ad_consent_model, updated_at)`.
-Both are read into the realtime service with a 30s TTL cache; changes are audited.
+`market_policies(market PK, service_class, required_age_tier, guest_minutes_per_day,
+monetization_enabled, matching_enabled, residency, retention_days, reporting_authority,
+primary_languages text[], moderator_coverage bool, legal_signoff_ref, policy_version,
+effective_at, changelog, updated_at)`.
+Rows exist for every ISO-3166-1 alpha-2 code; a missing row is treated as `blocked`. Realtime and
+web cache the resolved row for 30s; writes are audited and versioned (ADR-0018).
 
 ## Hot-path index review
 

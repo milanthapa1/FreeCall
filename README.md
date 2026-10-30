@@ -28,7 +28,9 @@ designs, SLOs, security and privacy baselines, and the phased plan with acceptan
 ## Ground rules baked into this design
 
 1. **No matchmaking without age assurance.** Age state is a server-side gate on the
-   enqueue path, not a client flag. Guests get a capped, low-privilege tier.
+   enqueue path, not a client flag. The required tier comes from a versioned per-market
+   policy pack; an unknown or unsigned market is blocked, not default-allowed (ADR-0018).
+   Guests get a capped, low-privilege tier.
 2. **Safety is in the MVP critical path.** Frame sampling, text moderation, reporting,
    evidence capture, auto-bans, appeals and the moderator console are Phase 3, before
    any growth work.
