@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowJs": false,
+    "baseUrl": ".",
+    "paths": {
+      "@freecall/auth": ["packages/auth/src/index.ts"],
+      "@freecall/config": ["packages/config/src/index.ts"],
+      "@freecall/core": ["packages/core/src/index.ts"],
+      "@freecall/db": ["packages/db/src/index.ts"],
+      "@freecall/i18n": ["packages/i18n/src/index.ts"],
+      "@freecall/moderation": ["packages/moderation/src/index.ts"],
+      "@freecall/observability": ["packages/observability/src/index.ts"],
+      "@freecall/protocol": ["packages/protocol/src/index.ts"],
+      "@freecall/providers": ["packages/providers/src/index.ts"],
+      "@freecall/testing": ["packages/testing/src/index.ts"],
+      "@freecall/ui": ["packages/ui/src/index.ts"]
+    }
+  }
+}

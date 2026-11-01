@@ -3,10 +3,9 @@
 Adults-only random video chat. Original product, original copy, original assets.
 No third-party branding is used anywhere in this repository.
 
-**Status: Phase 0 — design approved pending. No application code yet.**
-This repository currently contains the architecture pack required before implementation:
-monorepo layout, ADRs, risk register, data model, protocol, matchmaking and moderation
-designs, SLOs, security and privacy baselines, and the phased plan with acceptance criteria.
+**Status: Phase 2 complete. Phase 3 (safety/moderation) in progress.**
+This repository contains a working implementation of the core product: landing page, age gate,
+guest sessions, matchmaking, realtime video calls, chat, and the full moderation pipeline scaffolding.
 
 ## Read in this order
 

@@ -1,0 +1,26 @@
+{
+  "name": "@freecall/realtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env.local --import tsx --watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@freecall/config": "*",
+    "@freecall/db": "*",
+    "@freecall/observability": "*",
+    "@freecall/protocol": "*",
+    "ioredis": "^5.11.1",
+    "jose": "^6.2.14",
+    "livekit-server-sdk": "^2.19.2",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.20.4"
+  }
+}

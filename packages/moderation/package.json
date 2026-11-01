@@ -1,0 +1,17 @@
+{
+  "name": "@freecall/moderation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@freecall/config": "*",
+    "@freecall/db": "*",
+    "@freecall/observability": "*",
+    "@freecall/protocol": "*",
+    "zod": "^3.24.2"
+  }
+}
