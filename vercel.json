@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
-  "installCommand": "cd ../.. && npm ci",
-  "buildCommand": "cd ../.. && npx turbo run build --filter=@freecall/web",
-  "outputDirectory": ".next"
+  "installCommand": "npm ci",
+  "buildCommand": "npx turbo run build --filter=@freecall/web",
+  "outputDirectory": "apps/web/.next",
+  "ignoreCommand": "npx turbo-ignore @freecall/web"
 }
