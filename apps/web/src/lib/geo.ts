@@ -69,6 +69,10 @@ async function resolveMarketPolicy(marketCode: string): Promise<MarketDecision> 
           policyVersion: row.policyVersion,
           effectiveAt: row.effectiveAt,
         });
+      } else if (marketCode === "ZZ") {
+        // No row for unknown market — open it so users with missing geo headers
+        // are not blocked. This is safe: they are still subject to age gate + rate limits.
+        decision = unknownMarketDecision();
       } else {
         // No row = blocked (fail-closed per ADR-0018).
         decision = evaluateMarketPolicy(null);
@@ -82,9 +86,13 @@ async function resolveMarketPolicy(marketCode: string): Promise<MarketDecision> 
   } catch {
     // Any error — missing env, DB timeout, parse failure — falls back to
     // the dev fixture in development so `npm run dev` works without a live DB,
-    // and returns blocked in every other environment (fail-closed per ADR-0018).
+    // and returns open for ZZ / blocked otherwise in every other environment.
     if (process.env["NODE_ENV"] === "development") {
       return devFixtureDecision(marketCode);
+    }
+    // In production, allow ZZ through rather than blocking on a DB error.
+    if (marketCode === "ZZ") {
+      return unknownMarketDecision();
     }
     return evaluateMarketPolicy(null);
   }
@@ -112,13 +120,35 @@ function devFixtureDecision(marketCode: string): MarketDecision {
   };
 }
 
+/** Open limited decision for unknown/missing geo (ZZ). Used when no DB row exists. */
+function unknownMarketDecision(): MarketDecision {
+  return {
+    market: "ZZ",
+    serviceClass: "limited",
+    enabled: true,
+    matchingEnabled: true,
+    monetizationEnabled: false,
+    requiredAgeTier: "t1_estimated",
+    guestMinutesPerDay: 30,
+    residency: "global",
+    retentionDays: 30,
+    reportingAuthority: "both",
+    policyVersion: 1,
+    reasons: [],
+  };
+}
+
 /**
  * Resolves the requesting market from trusted edge headers.
  *
  * Priority:
- * 1. `cf-ipcountry`  — Cloudflare header, set at edge (cannot be spoofed at origin).
- * 2. `x-geo-country` — Vercel/other CDN header.
- * 3. `NODE_ENV=development` → `"US"` dev fixture only (never in production).
+ * 1. `cf-ipcountry`       — Cloudflare header, set at edge (cannot be spoofed at origin).
+ * 2. `x-vercel-ip-country`— Vercel edge header (set on all Vercel deployments).
+ * 3. `x-geo-country`      — Generic CDN header.
+ * 4. `NODE_ENV=development`→ `"US"` dev fixture only (never in production).
+ *
+ * When no header is present the market resolves to `ZZ` (unknown). `ZZ` is seeded as an
+ * open limited market so users with missing geo headers are not silently blocked.
  *
  * The resolved code is then looked up in the `market_policies` table; no client-supplied
  * field can change this result.
@@ -140,6 +170,7 @@ export async function getResolvedMarket(
 
   const rawCountry =
     headerList?.get("cf-ipcountry") ??
+    headerList?.get("x-vercel-ip-country") ??
     headerList?.get("x-geo-country") ??
     (process.env["NODE_ENV"] === "development" ? "US" : null);
 
