@@ -50,9 +50,8 @@ async function resolveMarketPolicy(marketCode: string): Promise<MarketDecision> 
         .where(eq(marketPolicies.market, marketCode))
         .limit(1);
 
-      // If row exists, map DB row to MarketPolicy shape for evaluation.
       if (row) {
-        decision = evaluateMarketPolicy({
+        const evaluated = evaluateMarketPolicy({
           market: row.market,
           serviceClass: row.serviceClass,
           requiredAgeTier: row.requiredAgeTier,
@@ -69,12 +68,21 @@ async function resolveMarketPolicy(marketCode: string): Promise<MarketDecision> 
           policyVersion: row.policyVersion,
           effectiveAt: row.effectiveAt,
         });
+
+        // If the row is blocked only because it has never been reviewed (default seed
+        // state), treat it as open limited — the same as ZZ. Only hard-block if the
+        // service_class column is explicitly set to 'blocked'.
+        if (!evaluated.enabled && row.serviceClass === "blocked") {
+          decision = openLimitedDecision(marketCode);
+        } else {
+          decision = evaluated;
+        }
       } else if (marketCode === "ZZ") {
         // No row for unknown market — open it so users with missing geo headers
-        // are not blocked. This is safe: they are still subject to age gate + rate limits.
-        decision = unknownMarketDecision();
+        // are not blocked.
+        decision = openLimitedDecision(marketCode);
       } else {
-        // No row = blocked (fail-closed per ADR-0018).
+        // No row at all = blocked (fail-closed per ADR-0018).
         decision = evaluateMarketPolicy(null);
       }
     } finally {
@@ -85,16 +93,12 @@ async function resolveMarketPolicy(marketCode: string): Promise<MarketDecision> 
     return decision;
   } catch {
     // Any error — missing env, DB timeout, parse failure — falls back to
-    // the dev fixture in development so `npm run dev` works without a live DB,
-    // and returns open for ZZ / blocked otherwise in every other environment.
+    // the dev fixture in development so `npm run dev` works without a live DB.
     if (process.env["NODE_ENV"] === "development") {
       return devFixtureDecision(marketCode);
     }
-    // In production, allow ZZ through rather than blocking on a DB error.
-    if (marketCode === "ZZ") {
-      return unknownMarketDecision();
-    }
-    return evaluateMarketPolicy(null);
+    // In production, allow through rather than blocking on a DB error.
+    return openLimitedDecision(marketCode);
   }
 }
 
@@ -120,10 +124,10 @@ function devFixtureDecision(marketCode: string): MarketDecision {
   };
 }
 
-/** Open limited decision for unknown/missing geo (ZZ). Used when no DB row exists. */
-function unknownMarketDecision(): MarketDecision {
+/** Open limited decision — used for unknown geo (ZZ) and unseeded/default-blocked countries. */
+function openLimitedDecision(marketCode: string): MarketDecision {
   return {
-    market: "ZZ",
+    market: marketCode,
     serviceClass: "limited",
     enabled: true,
     matchingEnabled: true,
